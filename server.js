@@ -99,15 +99,15 @@ app.post('/login', async (req, res) => {
         // Set refresh token in HTTP-only cookie
         res.cookie('refreshToken', data.AuthenticationResult.RefreshToken, {
             httpOnly: true,
-            secure: true, // for HTTPS
-            sameSite: 'strict',
+            secure: false, // for HTTPS
+            sameSite: 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
         });
         // Also store the username in a cookie for refresh token operations
         res.cookie('username', username, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
+            secure: false,
+            sameSite: 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
         });
         // Send access token in response body
@@ -153,6 +153,9 @@ app.post('/logout', async (req, res) => {
 app.post('/refresh-token', async (req, res) => {
     const refreshToken = req.cookies.refreshToken; // Read from HttpOnly cookie
     const username = req.cookies.username; // Get username from cookie
+    
+    console.log('Refresh token request received', { hasRefreshToken: !!refreshToken, hasUsername: !!username });
+    
     if (!refreshToken || !username) {
         return res.status(401).json({ error: 'No refresh token or username provided' });
     }
@@ -172,8 +175,8 @@ app.post('/refresh-token', async (req, res) => {
         });
     } catch (error) {
         console.error('Refresh token error:', error);
-        res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'strict' });
-        res.clearCookie('username', { httpOnly: true, secure: true, sameSite: 'strict' });
+        res.clearCookie('refreshToken', { httpOnly: true, secure: false, sameSite: 'lax' });
+        res.clearCookie('username', { httpOnly: true, secure: false, sameSite: 'lax' });
         res.status(401).json({ error: 'Session expired or invalid. Please log in again.' }); 
     }
 });

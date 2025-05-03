@@ -16,7 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to initialize audio context
     function initAudio() {
-        if (audioContext) return;
+        // If we already have an audio context but it's in a closed state, we need to recreate it
+        if (audioContext && (audioContext.state === 'closed')) {
+            audioContext = null;
+            audioSource = null;
+        }
+        if (audioContext) return true;
         try {
             // Create audio context
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -43,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (audioContext && audioContext.state === 'suspended') {
             audioContext.resume();
         }
+        // Ensure we have a fresh stream URL to prevent caching issues
+        audioElement.src = "/stream?t=" + new Date().getTime();
         // Start playback
         audioElement.play().then(() => {
             applyPitchShifting(frequencyToggle.checked);
@@ -64,7 +71,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (audioElement) {
             audioElement.pause();
             audioElement.currentTime = 0;
+            
+            // Properly clean up the audio context
+            if (audioContext) {
+                // Suspend the context instead of closing it to allow for reuse
+                audioContext.suspend().then(() => {
+                    console.log("Audio context suspended");
+                }).catch(err => {
+                    console.error("Error suspending audio context:", err);
+                });
+            }
         }
+        
         // Update UI
         isPlaying = false;
         playButton.disabled = false;

@@ -300,7 +300,6 @@ const verifyCognitoToken = async (req, res, next) => {
             AccessToken: token
         };
         const userData = await cognito.getUser(params).promise();
-        // Find the 'sub' attribute (user's unique ID in Cognito)
         const subAttribute = userData.UserAttributes.find(attr => attr.Name === 'sub');
         if (!subAttribute) {
             return res.status(401).json({ error: 'Could not identify user from token' });

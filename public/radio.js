@@ -5,11 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const frequencyToggle = document.getElementById('frequencyToggle');
     const statusText = document.getElementById('statusText');
     
-    // Add a hidden audio element if not present in HTML
     let audioElement = document.createElement('audio');
     audioElement.style.display = 'none';
     document.body.appendChild(audioElement);
-    
     let audioContext = null;
     let audioSource = null;
     let isPlaying = false;
@@ -120,7 +118,4 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error applying pitch shifting:", e);
         }
     }
-    
-    // Log that the script has loaded
-    console.log("Radio conversion script loaded and initialized");
 });

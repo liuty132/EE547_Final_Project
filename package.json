@@ -8,6 +8,7 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.802.0",
     "aws-sdk": "^2.1499.0",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
@@ -15,7 +16,9 @@
     "dotenv": "^16.5.0",
     "express": "^4.18.2",
     "got": "^11.8.5",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.2",
+    "pg": "^8.15.6"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

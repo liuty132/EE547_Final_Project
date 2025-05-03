@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             const data = await response.json();
             // Store the new access token
             localStorage.setItem('accessToken', data.accessToken);
-            
             // Get user info using the token
             const userResponse = await fetch('/user-info', {
                 method: 'GET',
@@ -44,6 +43,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
+
 // Show/hide forms
 function showForm(formId) {
     document.getElementById(formId).classList.add('active');
@@ -52,6 +52,7 @@ function showForm(formId) {
 function hideForm(formId) {
     document.getElementById(formId).classList.remove('active');
 }
+
 
 // Auth functions
 async function signup() {
@@ -82,7 +83,6 @@ async function signup() {
 async function verifyEmail() {
     const username = document.getElementById('verification-section').dataset.username;
     const code = document.getElementById('verification-code').value;
-    
     try {
         const response = await fetch('/confirm', {
             method: 'POST',
@@ -105,7 +105,6 @@ async function verifyEmail() {
 async function login() {
     const username = document.getElementById('login-username').value;
     const password = document.getElementById('login-password').value;
-    
     try {
         const response = await fetch('/login', {
             method: 'POST',

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classical Radio - 432Hz Mode</title>
+    <title>Upload Audio - Harmony 432</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -49,31 +49,23 @@
         <p id="login-message"></p>
     </div>
 
-    <div class="radio-container">
-        <h1>Classical Radio with 432Hz Mode</h1>
-        
-        <div class="info-box">
-            <p>This radio streams classical music from KUSC. Toggle the 432Hz mode to experience the music at the "healing frequency" of 432Hz instead of the standard 440Hz tuning.</p>
-        </div>
-        
-        <div class="player-controls">
-            <button id="playButton" class="control-button">Play Radio</button>
-            <button id="stopButton" class="control-button" disabled>Stop</button>
-            
-            <div class="toggle-container">
-                <label class="toggle-switch">
-                    <input type="checkbox" id="frequencyToggle">
-                    <span class="slider"></span>
-                </label>
-                <span class="toggle-label">432Hz Mode</span>
+    <!-- Upload -->
+    <div class="upload-container">
+        <h2 class="upload-title">Upload Your Audio File</h2>
+        <input type="file" id="audioFile" class="file-input" accept="audio/*">
+        <label for="audioFile" class="upload-btn">Choose File</label>
+        <div class="file-name" id="fileName">No file selected</div>
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
             </div>
-            
-            <div class="status-indicator" id="statusText">Radio stopped</div>
+            <div class="status-message" id="statusMessage">Uploading...</div>
         </div>
+        <button id="submitBtn" class="upload-btn" style="margin-top: 20px; display: none;">Upload</button>
     </div>
 
-    <!-- Load radio conversion script -->
-    <script src="radio.js"></script>
+    <!-- Load file upload script -->
+    <script src="upload.js"></script>
     
     <!-- Load AWS Cognito script -->
     <script src="auth.js"></script>

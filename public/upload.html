@@ -3,71 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Audio - Harmony 432</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Upload Audio</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --aw-bg-main: #0f172a;
+            --aw-bg-navbar: #334155;
+            --aw-bg-section: #1e293b;
+            --aw-text-main: #f1f5f9;
+            --aw-text-muted: #94a3b8;
+            --aw-accent: #3b82f6;
+            --aw-accent-hover: #2563eb;
+            --aw-card-bg: #334155;
+        }
+
+        .bg-main { background-color: var(--aw-bg-main); }
+        .bg-navbar { background-color: var(--aw-bg-navbar); }
+        .bg-section { background-color: var(--aw-bg-section); }
+        .text-main { color: var(--aw-text-main); }
+        .text-muted { color: var(--aw-text-muted); }
+        .card { background-color: var(--aw-card-bg); color: var(--aw-text-main); }
+        .btn-accent {
+            background-color: var(--aw-accent);
+            color: white;
+        }
+        .btn-accent:hover {
+            background-color: var(--aw-accent-hover);
+        }
+    </style>
 </head>
-<body>
-    <div class="banner">
-        <div class="nav-tabs">
-            <div class="logo">Music App</div>
-            <a href="/" class="nav-tab">Home</a>
-            <a href="/radio" class="nav-tab">Radio</a>
-            <a href="/upload" class="nav-tab">Upload</a>
+
+<body class="bg-main text-main">
+    <!-- Navigation -->
+    <header class="bg-navbar shadow">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-main">432 Hz Music</a>
+            <nav class="space-x-4">
+                <a href="/" class="text-muted hover:text-blue-400">Home</a>
+                <a href="/radio" class="text-muted hover:text-blue-400">Radio</a>
+                <a href="/upload" class="text-muted hover:text-blue-400">Upload</a>
+            </nav>
+            <div class="space-x-2 flex items-center">
+                <span id="username-display" class="hidden text-main"></span>
+                <button onclick="showForm('signup-form')" class="text-blue-400 hover:underline">Sign Up</button>
+                <button onclick="showForm('login-form')" class="text-blue-400 hover:underline">Login</button>
+                <button id="logout-btn" onclick="logout()" class="hidden text-red-400 hover:underline">Logout</button>
+            </div>
         </div>
-        <div class="auth-forms" style="display: none;">
-            <span id="username-display" style="display: none;">Welcome, User</span>
-            <button onclick="showForm('signup-form')">Sign Up</button>
-            <button onclick="showForm('login-form')">Login</button>
-            <button id="logout-btn" style="display: none;" onclick="logout()">Logout</button>
-        </div>
-    </div>
-    
+    </header>
+
     <!-- Signup Form -->
-    <div id="signup-form" class="form-container">
-        <span class="close-btn" onclick="hideForm('signup-form')">×</span>
-        <h2>Sign Up</h2>
-        <input type="text" id="signup-username" placeholder="Username">
-        <input type="email" id="signup-email" placeholder="Email">
-        <input type="password" id="signup-password" placeholder="Password">
-        <button onclick="signup()">Sign Up</button>
-        <div id="verification-section" class="verification-form">
-            <h3>Verify Email</h3>
-            <input type="text" id="verification-code" placeholder="Verification Code">
-            <button onclick="verifyEmail()">Verify</button>
-            <p id="verification-message"></p>
+    <div id="signup-form" class="form-container hidden max-w-md mx-auto my-6 card p-6 rounded-lg shadow">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Sign Up</h2>
+            <span class="text-muted cursor-pointer text-xl" onclick="hideForm('signup-form')">×</span>
         </div>
-        <p id="signup-message"></p>
+        <input type="text" id="signup-username" placeholder="Username" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400" />
+        <input type="email" id="signup-email" placeholder="Email" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400" />
+        <input type="password" id="signup-password" placeholder="Password" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400" />
+        <button onclick="signup()" class="w-full btn-accent py-2 rounded transition">Sign Up</button>
     </div>
 
     <!-- Login Form -->
-    <div id="login-form" class="form-container">
-        <span class="close-btn" onclick="hideForm('login-form')">×</span>
-        <h2>Login</h2>
-        <input type="text" id="login-username" placeholder="Username">
-        <input type="password" id="login-password" placeholder="Password">
-        <button onclick="login()">Login</button>
-        <p id="login-message"></p>
-    </div>
-
-    <!-- Upload -->
-    <div class="upload-container">
-        <h2 class="upload-title">Upload Your Audio File</h2>
-        <input type="file" id="audioFile" class="file-input" accept="audio/*">
-        <label for="audioFile" class="upload-btn">Choose File</label>
-        <div class="file-name" id="fileName">No file selected</div>
-        <div class="progress-container" id="progressContainer">
-            <div class="progress-bar">
-                <div class="progress" id="progressBar"></div>
-            </div>
-            <div class="status-message" id="statusMessage">Uploading...</div>
+    <div id="login-form" class="form-container hidden max-w-md mx-auto my-6 card p-6 rounded-lg shadow">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Login</h2>
+            <span class="text-muted cursor-pointer text-xl" onclick="hideForm('login-form')">×</span>
         </div>
-        <button id="submitBtn" class="upload-btn" style="margin-top: 20px; display: none;">Upload</button>
+        <input type="text" id="login-username" placeholder="Username" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400" />
+        <input type="password" id="login-password" placeholder="Password" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400" />
+        <button onclick="login()" class="w-full btn-accent py-2 rounded transition">Login</button>
+        <p id="login-message" class="text-sm text-red-400 mt-2"></p>
     </div>
 
-    <!-- Load file upload script -->
+    <!-- Upload Section -->
+    <section class="py-20 bg-section text-center px-4">
+        <div class="max-w-xl mx-auto card p-8 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-6">Upload Your Audio File</h2>
+            <input type="file" id="audioFile" accept="audio/*" class="hidden" onchange="updateFileName()">
+            <label for="audioFile" class="inline-block btn-accent px-6 py-2 rounded cursor-pointer transition">Choose Local File</label>
+            <div id="fileName" class="mt-4 text-sm text-muted">No file selected</div>
+            <div id="progressContainer" class="w-full mt-6 hidden">
+                <div class="w-full bg-gray-700 rounded-full h-4 mb-2">
+                    <div id="progressBar" class="bg-blue-600 h-4 rounded-full w-0 transition-all duration-300"></div>
+                </div>
+                <div id="statusMessage" class="text-sm text-muted">Uploading...</div>
+            </div>
+            <button id="submitBtn" style="display: none;" class="mt-6 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">Upload</button>
+        </div>
+    </section>
+
     <script src="upload.js"></script>
-    
-    <!-- Load AWS Cognito script -->
     <script src="auth.js"></script>
 </body>
 </html>

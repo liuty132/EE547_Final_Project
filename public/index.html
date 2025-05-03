@@ -1,55 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music App</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>432 Hz Music</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <!-- Store colors as variables so can be modified easily in future -->
+    <style>
+        :root {
+        --aw-bg-main: #0f172a;         
+        --aw-bg-navbar: #334155;
+        --aw-bg-section: #1e293b;     
+        --aw-text-main: #f1f5f9;      
+        --aw-text-muted: #94a3b8;     
+        --aw-accent: #3b82f6;        
+        --aw-accent-hover: #2563eb;   
+        --aw-card-bg: #334155;        
+        }
+
+        .bg-main { background-color: var(--aw-bg-main); }
+        .bg-navbar { background-color: var(--aw-bg-navbar); }
+        .bg-section { background-color: var(--aw-bg-section); }
+        .text-main { color: var(--aw-text-main); }
+        .text-muted { color: var(--aw-text-muted); }
+        .card { background-color: var(--aw-card-bg); color: var(--aw-text-main); }
+        .btn-accent {
+        background-color: var(--aw-accent);
+        color: white;
+        }
+        .btn-accent:hover {
+        background-color: var(--aw-accent-hover);
+        }
+
+        .flip-card {perspective: 1000px;}
+        .flip-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card:hover .flip-inner {transform: rotateY(180deg);}
+        .flip-front {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        } 
+        .flip-back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .flip-back {transform: rotateY(180deg);}
+    </style>
 </head>
-<body>
-    <div class="banner">
-        <div class="nav-tabs">
-            <div class="logo">Music App</div>
-            <a href="/" class="nav-tab">Home</a>
-            <a href="/radio" class="nav-tab">Radio</a>
-            <a href="/upload" class="nav-tab">Upload</a>
+
+<body class="bg-main text-main">
+
+    <!-- Navigation -->
+    <header class="bg-navbar shadow">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="/" class="text-2xl font-bold text-main">432 Hz Music</a>
+        <nav class="space-x-4">
+            <a href="/" class="text-muted hover:text-blue-400">Home</a>
+            <a href="/radio" class="text-muted hover:text-blue-400">Radio</a>
+            <a href="/upload" class="text-muted hover:text-blue-400">Upload</a>
+        </nav>
+        <div class="space-x-2 flex items-center">
+            <span id="username-display" class="hidden text-main"></span>
+            <button onclick="showForm('signup-form')" class="text-blue-400 hover:underline">Sign Up</button>
+            <button onclick="showForm('login-form')" class="text-blue-400 hover:underline">Login</button>
+            <button id="logout-btn" onclick="logout()" class="hidden text-red-400 hover:underline">Logout</button>
         </div>
-        <div class="auth-forms" style="display: none;">
-            <span id="username-display" style="display: none;">Welcome, User</span>
-            <button onclick="showForm('signup-form')">Sign Up</button>
-            <button onclick="showForm('login-form')">Login</button>
-            <button id="logout-btn" style="display: none;" onclick="logout()">Logout</button>
         </div>
-    </div>
+    </header>
 
     <!-- Signup Form -->
-    <div id="signup-form" class="form-container">
-        <span class="close-btn" onclick="hideForm('signup-form')">×</span>
-        <h2>Sign Up</h2>
-        <input type="text" id="signup-username" placeholder="Username">
-        <input type="email" id="signup-email" placeholder="Email">
-        <input type="password" id="signup-password" placeholder="Password">
-        <button onclick="signup()">Sign Up</button>
-        <div id="verification-section" class="verification-form">
-            <h3>Verify Email</h3>
-            <input type="text" id="verification-code" placeholder="Verification Code">
-            <button onclick="verifyEmail()">Verify</button>
-            <p id="verification-message"></p>
+    <div id="signup-form" class="form-container hidden max-w-md mx-auto my-6 card p-6 rounded-lg shadow">
+        <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Sign Up</h2>
+        <span class="text-muted cursor-pointer text-xl" onclick="hideForm('signup-form')">×</span>
         </div>
-        <p id="signup-message"></p>
+
+        <input type="text" id="signup-username" placeholder="Username" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400"/>
+        <input type="email" id="signup-email" placeholder="Email" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400"/>
+        <input type="password" id="signup-password" placeholder="Password" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400"/>
+        
+        <button onclick="signup()" class="w-full btn-accent py-2 rounded transition">Sign Up</button>
     </div>
 
     <!-- Login Form -->
-    <div id="login-form" class="form-container">
-        <span class="close-btn" onclick="hideForm('login-form')">×</span>
-        <h2>Login</h2>
-        <input type="text" id="login-username" placeholder="Username">
-        <input type="password" id="login-password" placeholder="Password">
-        <button onclick="login()">Login</button>
-        <p id="login-message"></p>
+    <div id="login-form" class="form-container hidden max-w-md mx-auto my-6 card p-6 rounded-lg shadow">
+        <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Login</h2>
+        <span class="text-muted cursor-pointer text-xl" onclick="hideForm('login-form')">×</span>
+        </div>
+
+        <input type="text" id="login-username" placeholder="Username" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400"/>
+        <input type="password" id="login-password" placeholder="Password" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400"/>
+        
+        <button onclick="login()" class="w-full btn-accent py-2 rounded transition">Login</button>
+        <p id="login-message" class="text-sm text-red-400 mt-2"></p>
     </div>
 
-    <!-- Load AWS Cognito script -->
+    <!-- Center Blob -->
+    <section class="bg-section py-20 text-center px-4">
+        <h1 class="text-4xl md:text-6xl font-extrabold mb-4">Welcome to 432 Hz Music</h1>
+        <p class="text-lg md:text-xl text-muted mb-6"> Stream, upload, and convert audio into a more natural frequency. Calmer music = happier minds!</p>
+        <a href="/radio" class="inline-block btn-accent px-6 py-3 rounded-full transition">Start Listening</a>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16 bg-main">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 text-center px-4">
+        <div>
+            <h3 class="text-xl font-semibold mb-2">Live Stream</h3>
+            <p class="text-muted">Listen to KUSC in 432 Hz with real-time pitch shifting.</p>
+        </div>
+        <div>
+            <h3 class="text-xl font-semibold mb-2">Audio Upload</h3>
+            <p class="text-muted">Upload your tracks and get 432 Hz converted versions instantly.</p>
+        </div>
+        <div>
+            <h3 class="text-xl font-semibold mb-2">Personal Library</h3>
+            <p class="text-muted">Keep track of all your pitch shifted tracks in one place.</p>
+        </div>
+        </div>
+    </section>
+
+    <!-- Team Members Section -->
+    <section class="h-screen bg-section flex flex-col items-center justify-center px-4 text-center">
+        <h2 class="text-4xl font-bold mb-6">Meet the Team</h2>
+        
+        <p class="text-lg text-muted mb-8 max-w-2xl">
+        Our EE547 Final Project was built by a mix of Electrical Engineering students at USC from diverse backgrounds.
+        Get to know the minds behind the 432 Hz converter.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+
+            <div class="flip-card w-64 h-80 relative">
+                <div class="flip-inner w-full h-full relative">
+                    <!-- Front -->
+                    <div class="flip-front card p-6 rounded-lg shadow-lg flex flex-col items-center justify-center">
+                        <img src="images/placeholder.png" alt="Tommy Liu" class="w-24 h-24 rounded-full mb-4 object-cover shadow">
+                        <h3 class="text-xl font-semibold">Tommy Liu</h3>
+                        <p class="text-sm text-muted">Backend & Cloud Integration</p>
+                    </div>
+              
+                    <!-- Back -->
+                    <div class="flip-back card p-6 rounded-lg shadow-lg flex flex-col items-center justify-center text-sm">
+                        <p>Tommy [ insert quick biography intro].</p>
+                    </div>
+                </div>
+            </div>
+
+        <div class="flip-card w-64 h-80 relative">
+            <div class="flip-inner w-full h-full relative">
+                <!-- Front -->
+                <div class="flip-front card p-6 rounded-lg shadow-lg flex flex-col items-center justify-center">
+                    <img src="images/placeholder.png" alt="Carrie Lei" class="w-24 h-24 rounded-full mb-4 object-cover shadow">
+                    <h3 class="text-xl font-semibold">Carrie Lei</h3>
+                    <p class="text-sm text-muted">Frontend & UI Design</p>
+                </div>
+          
+                <!-- Back -->
+                <div class="flip-back card p-6 rounded-lg shadow-lg flex flex-col items-center justify-center text-sm">
+                    <p> Carrie is a MSEE student at USC, where she also completed her undergraduate degree in Electrical & Computer Engineering. 
+                        With a strong foundation in hardware systems — from computer architecture to antenna design — this is her first project in cloud computing. 
+                        She enjoys swimming and trying new foods around town in her free time.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flip-card w-64 h-80 relative">
+            <div class="flip-inner w-full h-full relative">
+                <!-- Front -->
+                <div class="flip-front card p-6 rounded-lg shadow-lg flex flex-col items-center justify-center">
+                    <img src="images/placeholder.png" alt="Xie He" class="w-24 h-24 rounded-full mb-4 object-cover shadow">
+                    <h3 class="text-xl font-semibold">Xie He</h3>
+                    <p class="text-sm text-muted">Audio & DSP Conversion</p>
+                </div>
+          
+                <!-- Back -->
+                <div class="flip-back card p-6 rounded-lg shadow-lg flex flex-col items-center justify-center text-sm">
+                    <p>Xie (Henry) [insert biography].</p>
+                </div>
+            </div>
+        </div>
+
+        </div>
+    </section>
+
+    <!-- Scripts -->
     <script src="/auth.js"></script>
 </body>
 </html>

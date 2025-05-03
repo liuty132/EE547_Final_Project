@@ -46,11 +46,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 // Show/hide forms
 function showForm(formId) {
-    document.getElementById(formId).classList.add('active');
+    document.getElementById(formId).classList.remove('hidden');
 }
 
 function hideForm(formId) {
-    document.getElementById(formId).classList.remove('active');
+    document.getElementById(formId).classList.add('hidden');
 }
 
 

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classical Radio - 432Hz Mode</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="banner">
+        <div class="nav-tabs">
+            <div class="logo">Music App</div>
+            <a href="/radio" class="nav-tab">Radio</a>
+        </div>
+        <div class="auth-forms" style="display: none;">
+            <span id="username-display" style="display: none;">Welcome, User</span>
+            <button onclick="showForm('signup-form')">Sign Up</button>
+            <button onclick="showForm('login-form')">Login</button>
+            <button id="logout-btn" style="display: none;" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    
+    <!-- Signup Form -->
+    <div id="signup-form" class="form-container">
+        <span class="close-btn" onclick="hideForm('signup-form')">×</span>
+        <h2>Sign Up</h2>
+        <input type="text" id="signup-username" placeholder="Username">
+        <input type="email" id="signup-email" placeholder="Email">
+        <input type="password" id="signup-password" placeholder="Password">
+        <button onclick="signup()">Sign Up</button>
+        <div id="verification-section" class="verification-form">
+            <h3>Verify Email</h3>
+            <input type="text" id="verification-code" placeholder="Verification Code">
+            <button onclick="verifyEmail()">Verify</button>
+            <p id="verification-message"></p>
+        </div>
+        <p id="signup-message"></p>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-form" class="form-container">
+        <span class="close-btn" onclick="hideForm('login-form')">×</span>
+        <h2>Login</h2>
+        <input type="text" id="login-username" placeholder="Username">
+        <input type="password" id="login-password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <p id="login-message"></p>
+    </div>
+
+    <div class="radio-container">
+        <a href="/" class="nav-button">← Back to Music App</a>
+        
+        <h1>Classical Radio with 432Hz Mode</h1>
+        
+        <div class="info-box">
+            <p>This radio streams classical music from KUSC. Toggle the 432Hz mode to experience the music at the "healing frequency" of 432Hz instead of the standard 440Hz tuning.</p>
+        </div>
+        
+        <div class="player-controls">
+            <button id="playButton" class="control-button">Play Radio</button>
+            <button id="stopButton" class="control-button" disabled>Stop</button>
+            
+            <div class="toggle-container">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="frequencyToggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="toggle-label">432Hz Mode</span>
+            </div>
+            
+            <div class="status-indicator" id="statusText">Radio stopped</div>
+        </div>
+    </div>
+
+    <!-- Load radio conversion script -->
+    <script src="radio_conversion.js"></script>
+    
+    <!-- Load AWS Cognito script with absolute path -->
+    <script src="auth.js"></script>
+</body>
+</html>

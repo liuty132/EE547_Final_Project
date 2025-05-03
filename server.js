@@ -9,6 +9,8 @@ const crypto = require('crypto');
 // const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const got = require('got');
+const fs = require('fs');
 require('dotenv').config(); 
 
 const app = express();
@@ -27,6 +29,70 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.static("public"));
+
+
+// ---------------------- Radio ---------------------------
+// Official KUSC Stream URLs directly from kusc.org
+const KUSC_STREAM_URLS = [
+    'https://playerservices.streamtheworld.com/pls/KUSCAAC96.pls', // High Quality (Recommended)
+    'https://playerservices.streamtheworld.com/pls/KUSCAAC32.pls', // High Efficiency (HE-AAC with low data usage)
+    'https://playerservices.streamtheworld.com/pls/KUSCMP256.pls'  // Premium Quality (AAC 256kbps)
+];
+
+
+// Route to proxy the radio stream (no server-side pitch shifting)
+app.get('/stream', async (req, res) => {
+    try {
+        // Set appropriate headers
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Transfer-Encoding', 'chunked');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        console.log(`Attempting to stream from ${KUSC_STREAM_URLS[0]}`);
+        // Try to get the primary stream
+        let streamResponse;
+        try {
+            streamResponse = await got.stream(KUSC_STREAM_URLS[0], {
+                timeout: { request: 10000 }, retry: { limit: 2 }
+            });
+        } catch (err) {
+            console.log(`Primary stream failed, trying fallback: ${KUSC_STREAM_URLS[1]}`);
+            // Try first fallback
+            try {
+                streamResponse = await got.stream(KUSC_STREAM_URLS[1], {
+                    timeout: { request: 10000 }
+                });
+            } catch (err2) {
+                console.log(`Secondary stream failed, trying last resort: ${KUSC_STREAM_URLS[2]}`);
+                // Try second fallback (demo station)
+                streamResponse = await got.stream(KUSC_STREAM_URLS[2]);
+            }
+        }
+        // Just pipe the stream - we'll do pitch shifting on the client side
+        streamResponse.pipe(res);
+        // Handle errors
+        streamResponse.on('error', (err) => {
+            console.error('Stream error:', err);
+            if (!res.headersSent) {
+                res.status(500).send('Stream error');
+            }
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        if (!res.headersSent) {
+            res.status(500).send('Error connecting to radio stream');
+        }
+    }
+});
+
+
+// Route to serve the radio page
+app.get('/radio', (req, res) => {
+    // Read the radio.html file
+    let radioHtml = fs.readFileSync(path.join(__dirname, 'public', 'radio.html'), 'utf8');
+    // Inject the script tag before the closing body tag
+    res.send(radioHtml);
+});
 
 
 // ---------------------- Cognito ---------------------------
@@ -101,14 +167,16 @@ app.post('/login', async (req, res) => {
             httpOnly: true,
             secure: false, // for HTTPS
             sameSite: 'lax',
-            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+            maxAge: 30 * 24 * 60 * 60 * 1000,  // 30 days
+            path: '/'
         });
         // Also store the username in a cookie for refresh token operations
         res.cookie('username', username, {
             httpOnly: true,
             secure: false,
             sameSite: 'lax',
-            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+            maxAge: 30 * 24 * 60 * 60 * 1000,  // 30 days
+            path: '/'
         });
         // Send access token in response body
         res.json({
@@ -153,9 +221,6 @@ app.post('/logout', async (req, res) => {
 app.post('/refresh-token', async (req, res) => {
     const refreshToken = req.cookies.refreshToken; // Read from HttpOnly cookie
     const username = req.cookies.username; // Get username from cookie
-    
-    console.log('Refresh token request received', { hasRefreshToken: !!refreshToken, hasUsername: !!username });
-    
     if (!refreshToken || !username) {
         return res.status(401).json({ error: 'No refresh token or username provided' });
     }
@@ -281,7 +346,7 @@ app.listen(port, () => {
 
 // Add this route to serve the HTML file
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile('index.html', { root: './public' });
 });
 
 

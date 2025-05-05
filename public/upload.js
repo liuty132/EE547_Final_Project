@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     fileName.textContent = 'No file selected';
                     submitBtn.style.display = 'none';
                     submitBtn.disabled = false;
-                }, 100);
+                }, 10000);
             } else {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Upload timed out');

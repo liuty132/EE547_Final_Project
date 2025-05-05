@@ -11,3 +11,8 @@ npm-debug.log*
 
 # OS generated files
 .DS_Store
+
+
+# Lambda
+lambda-depoloyment/node_modules/
+lambda-depoloyment/package-lock.json

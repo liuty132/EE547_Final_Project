@@ -70,9 +70,31 @@ app.post('/signup', async (req, res) => {
     };
     try {
         const data = await cognito.signUp(params).promise();
+        const cognitoSub = data.UserSub;
+        const pool = new Pool({
+            host: process.env.DB_HOST,
+            port: process.env.DB_PORT,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
+            ssl: {
+                rejectUnauthorized: false
+            },
+            connectionTimeoutMillis: 5000,
+            idleTimeoutMillis: 30000
+        });
+        await pool.query(
+            'INSERT INTO users (cognito_sub, username) VALUES ($1, $2)',
+            [cognitoSub, username]
+        );
+        await pool.end();
         res.json(data);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        console.error('Signup error:', error);
+        res.status(400).json({ 
+            error: error.message,
+            details: error.details || null
+        });
     }
 });
 
@@ -287,13 +309,19 @@ app.get('/radio', (req, res) => {
 // ---------------------- S3 & Lambda Integration ----------------------
 // Middleware to verify Cognito token and extract user info
 const verifyCognitoToken = async (req, res, next) => {
+    console.log('Verifying Cognito token...');
     const authHeader = req.headers.authorization;
     let token = null;
     if (authHeader && authHeader.startsWith('Bearer ')) {
         token = authHeader.substring(7, authHeader.length);
     }
     if (!token) {
-        return res.status(401).json({ error: 'No valid token provided' });
+        // return res.status(401).json({ error: 'No valid token provided' });
+        // if no token, continue without userSub and username
+        req.userSub = 'non_user';
+        req.username = 'na';
+        next();
+        return;
     }
     try {
         const params = {
@@ -329,40 +357,42 @@ app.post('/upload-audio', verifyCognitoToken, upload.single('audio'), async (req
         }
         // Upload unprocessed file to S3
         const s3 = new AWS.S3();
-        const fileName = `${req.userSub}/original/${Date.now()}-${req.file.originalname}`;
+        const fileName = `${Date.now()}-${req.file.originalname}`;
+        const filePath = `${req.userSub}/original/${fileName}`;
+        console.log(`Uploading file to s3://${process.env.S3_AUDIO_BUCKET}/${filePath}`);
         const s3Bucket = process.env.S3_AUDIO_BUCKET;
         await s3.upload({
             Bucket: s3Bucket,
-            Key: fileName,
+            Key: filePath,
             Body: req.file.buffer,
             ContentType: req.file.mimetype
         }).promise();
         // Call Lambda function with S3 reference and user info for processing and inserting into postgres
-        // const lambda = new AWS.Lambda();
-        // const params = {
-        //     FunctionName: process.env.AUDIO_PROCESSOR_LAMBDA,
-        //     InvocationType: 'RequestResponse',
-        //     Payload: JSON.stringify({
-        //         fileName: fileName,
-        //         fileType: req.file.mimetype,
-        //         userSub: req.userSub,
-        //         username: req.username,
-        //         s3Bucket: s3Bucket
-        //     })
-        // };
-        // const lambdaResponse = await lambda.invoke(params).promise();
-        // const responsePayload = JSON.parse(lambdaResponse.Payload);
-        // if (responsePayload.statusCode === 200) {
-        //     res.json({
-        //         message: 'File processed successfully',
-        //         metadata: responsePayload.body
-        //     });
-        // } else {
-        //     throw new Error(responsePayload.body || 'Lambda processing failed');
-        // }
+        const lambda = new AWS.Lambda();
+        const params = {
+            FunctionName: process.env.AUDIO_PROCESSOR_LAMBDA,
+            InvocationType: 'RequestResponse',
+            Payload: JSON.stringify({
+                userSub: req.userSub,
+                fileName: fileName,
+                fileType: req.file.mimetype,
+                username: req.username,
+                s3Bucket: s3Bucket
+            })
+        };
+        const lambdaResponse = await lambda.invoke(params).promise();
+        const responsePayload = JSON.parse(lambdaResponse.Payload);
+        if (responsePayload.statusCode === 200) {
+            res.json({
+                message: 'Conversion successful',
+                metadata: responsePayload.body
+            });
+        } else {
+            throw new Error(responsePayload.body || 'Audio conversion failed');
+        }
     } catch (error) {
-        console.error('Audio processing error:', error);
-        res.status(500).json({ error: 'Failed to process audio file' });
+        console.error('Audio conversion error:', error);
+        res.status(500).json({ error: 'Failed to convert audio file' });
     }
 });
 

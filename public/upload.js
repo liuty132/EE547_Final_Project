@@ -5,16 +5,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
     const statusMessage = document.getElementById('statusMessage');
-    const loginBtn = document.getElementById('loginBtn');
-    const signupBtn = document.getElementById('signupBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
+    const authForms = document.querySelector('.auth-forms');
+    const usernameDisplay = document.getElementById('username-display');
+    const logoutBtn = document.getElementById('logout-btn');
     
     // Check if user is logged in
     const token = localStorage.getItem('accessToken');
     if (token) {
-        loginBtn.style.display = 'none';
-        signupBtn.style.display = 'none';
+        authForms.style.display = 'block';
         logoutBtn.style.display = 'inline-block';
+    } else {
+        authForms.style.display = 'block';
     }
     // File selection
     fileInput.addEventListener('change', function() {

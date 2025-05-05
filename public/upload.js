@@ -5,18 +5,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
     const statusMessage = document.getElementById('statusMessage');
-    const authForms = document.querySelector('.auth-forms');
-    const usernameDisplay = document.getElementById('username-display');
-    const logoutBtn = document.getElementById('logout-btn');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
     
     // Check if user is logged in
     const token = localStorage.getItem('accessToken');
-    if (token) {
-        authForms.style.display = 'block';
-        logoutBtn.style.display = 'inline-block';
-    } else {
-        authForms.style.display = 'block';
-    }
     // File selection
     fileInput.addEventListener('change', function() {
         if (this.files.length > 0) {
@@ -33,10 +27,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!file) return;
         // Check if user is logged in
         const token = localStorage.getItem('accessToken');
-        if (!token) {
-            alert('Please log in to upload files');
-            return;
-        }
+        // if (!token) {
+        //     alert('Please log in to upload files');
+        //     return;
+        // }
         // Progress bar
         progressContainer.style.display = 'block';
         submitBtn.disabled = true;

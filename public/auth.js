@@ -1,5 +1,16 @@
 // Check for existing session on page load
 document.addEventListener('DOMContentLoaded', async function() {
+    // Check localStorage for existing username first
+    const storedUsername = localStorage.getItem('username');
+    if (storedUsername) {
+        document.getElementById('logout-btn').style.display = 'block';
+        document.getElementById('username-display').style.display = 'inline';
+        document.getElementById('username-display').textContent = `Welcome, ${storedUsername}`;
+        document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'none';
+        document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
+        return;
+    }
+
     try {
         // Try to refresh the token
         const response = await fetch('/refresh-token', {
@@ -24,22 +35,22 @@ document.addEventListener('DOMContentLoaded', async function() {
                 document.getElementById('logout-btn').style.display = 'block';
                 document.getElementById('username-display').style.display = 'inline';
                 document.getElementById('username-display').textContent = `Welcome, ${userData.username}`;
-                document.querySelector('.auth-forms button[onclick="showForm(\'login-form\')"]').style.display = 'none';
-                document.querySelector('.auth-forms button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
+                document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'none';
+                document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
+                localStorage.setItem('username', userData.username);
             }
         } else {
             // If not logged in, show signup and login buttons
-            document.querySelector('.auth-forms button[onclick="showForm(\'login-form\')"]').style.display = 'block';
-            document.querySelector('.auth-forms button[onclick="showForm(\'signup-form\')"]').style.display = 'block';
+            document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'block';
+            document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'block';
+            document.getElementById('username-display').style.display = 'none';
         }
     } catch (error) {
         console.error('Session restoration error:', error);
         // If refresh fails, show signup and login buttons
-        document.querySelector('.auth-forms button[onclick="showForm(\'login-form\')"]').style.display = 'block';
-        document.querySelector('.auth-forms button[onclick="showForm(\'signup-form\')"]').style.display = 'block';
-    } finally {
-        // Show the auth-forms container after authentication check is complete
-        document.querySelector('.auth-forms').style.display = 'flex';
+        document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'block';
+        document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'block';
+        document.getElementById('username-display').style.display = 'none';
     }
 });
 
@@ -121,8 +132,8 @@ async function login() {
             document.getElementById('logout-btn').style.display = 'block';
             document.getElementById('username-display').style.display = 'inline';
             document.getElementById('username-display').textContent = `Welcome, ${username}`;
-            document.querySelector('.auth-forms button[onclick="showForm(\'login-form\')"]').style.display = 'none';
-            document.querySelector('.auth-forms button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
+            document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'none';
+            document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
             hideForm('login-form');
         } else {
             document.getElementById('login-message').textContent = 'Error: ' + (data.error || 'Login failed');
@@ -144,8 +155,9 @@ async function logout() {
             credentials: 'include'
         });
         if (response.ok) {
-            // Clear the access token from localStorage
+            // Clear user data from localStorage
             localStorage.removeItem('accessToken');
+            localStorage.removeItem('username');
             // Hide logout button and username display
             document.getElementById('logout-btn').style.display = 'none';
             document.getElementById('username-display').style.display = 'none';

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>432 Hz Music</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
 
     <!-- Store colors as variables so can be modified easily in future -->
     <style>
@@ -18,6 +20,9 @@
         --aw-accent-hover: #2563eb;   
         --aw-card-bg: #334155;        
         }
+
+        body { font-family: 'Inter', sans-serif;}
+        h1, h2, h3, h4, h5, h6 { font-family: 'Space Grotesk', sans-serif; }
 
         .bg-main { background-color: var(--aw-bg-main); }
         .bg-navbar { background-color: var(--aw-bg-navbar); }
@@ -64,7 +69,7 @@
     <!-- Navigation -->
     <header class="bg-navbar shadow">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="/" class="text-2xl font-bold text-main">432 Hz Music</a>
+        <a href="/" class="text-2xl font-bold text-main">Resona</a>
         <nav class="space-x-4">
             <a href="/" class="text-muted hover:text-blue-400">Home</a>
             <a href="/radio" class="text-muted hover:text-blue-400">Radio</a>
@@ -80,7 +85,7 @@
     </header>
 
     <!-- Signup Form -->
-    <div id="signup-form" class="form-container hidden max-w-md mx-auto my-6 card p-6 rounded-lg shadow">
+    <div id="signup-form" class="form-container fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 card p-6 rounded-lg shadow hidden">
         <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-semibold">Sign Up</h2>
         <span class="text-muted cursor-pointer text-xl" onclick="hideForm('signup-form')">×</span>
@@ -94,7 +99,7 @@
     </div>
 
     <!-- Login Form -->
-    <div id="login-form" class="form-container hidden max-w-md mx-auto my-6 card p-6 rounded-lg shadow">
+    <div id="login-form" class="form-container fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 card p-6 rounded-lg shadow hidden">
         <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-semibold">Login</h2>
         <span class="text-muted cursor-pointer text-xl" onclick="hideForm('login-form')">×</span>
@@ -108,27 +113,35 @@
     </div>
 
     <!-- Center Blob -->
-    <section class="bg-section py-20 text-center px-4">
-        <h1 class="text-4xl md:text-6xl font-extrabold mb-4">Welcome to 432 Hz Music</h1>
-        <p class="text-lg md:text-xl text-muted mb-6"> Stream, upload, and convert audio into a more natural frequency. Calmer music = happier minds!</p>
-        <a href="/radio" class="inline-block btn-accent px-6 py-3 rounded-full transition">Start Listening</a>
+    <section class=" relative bg-center py-20 text-center px-4" style="background-image:url('images/background.png');">
+        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+
+        <div class="relative z-10">
+            <h1 class="text-5xl font-extrabold text-white tracking-tight mb-4 drop-shadow-md">Welcome to the 432Hz Realm</h1>
+            <p class="text-lg md:text-xl text-slate-200 mb-6 max-w-3xl mx-auto"> Stream, upload, and convert audio into a more naturally occuring resonance. <br>Calmer music = happier minds!</p>
+            <a href="/radio" class="inline-block btn-accent px-6 py-3 rounded-full transition">Start Listening</a>
+        </div>
     </section>
 
     <!-- Features Section -->
     <section class="py-16 bg-main">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 text-center px-4">
-        <div>
+        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 text-center px-4 ">
+
+        <div class="transform transition-transform duration-300 hover:scale-105 hover:bg-section p-6 rounded-lg">
             <h3 class="text-xl font-semibold mb-2">Live Stream</h3>
-            <p class="text-muted">Listen to KUSC in 432 Hz with real-time pitch shifting.</p>
+            <p class="text-muted"> Listen to KUSC in 432 Hz with real-time pitch shifting.</p>
         </div>
-        <div>
+
+        <div class="transform transition-transform duration-300 hover:scale-105 hover:bg-section p-6 rounded-lg">
             <h3 class="text-xl font-semibold mb-2">Audio Upload</h3>
-            <p class="text-muted">Upload your tracks and get 432 Hz converted versions instantly.</p>
+            <p class="text-muted"> Upload your tracks and get 432 Hz converted versions instantly.</p>
         </div>
-        <div>
-            <h3 class="text-xl font-semibold mb-2">Personal Library</h3>
-            <p class="text-muted">Keep track of all your pitch shifted tracks in one place.</p>
+
+        <div class="transform transition-transform duration-300 hover:scale-105 hover:bg-section p-6 rounded-lg">
+            <h3 class="text-xl font-semibold mb-2"> Personal Library</h3>
+            <p class="text-muted"> Keep track of all your pitch shifted tracks in one place.</p>
         </div>
+
         </div>
     </section>
 
@@ -138,7 +151,7 @@
         
         <p class="text-lg text-muted mb-8 max-w-2xl">
         Our EE547 Final Project was built by a mix of Electrical Engineering students at USC from diverse backgrounds.
-        Get to know the minds behind the 432 Hz converter.
+        Get to know the minds behind Resona.
         </p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
@@ -163,7 +176,7 @@
             <div class="flip-inner w-full h-full relative">
                 <!-- Front -->
                 <div class="flip-front card p-6 rounded-lg shadow-lg flex flex-col items-center justify-center">
-                    <img src="images/placeholder.png" alt="Carrie Lei" class="w-24 h-24 rounded-full mb-4 object-cover shadow">
+                    <img src="images/carrie.jpg" alt="Carrie Lei" class="w-24 h-24 rounded-full mb-4 object-cover shadow">
                     <h3 class="text-xl font-semibold">Carrie Lei</h3>
                     <p class="text-sm text-muted">Frontend & UI Design</p>
                 </div>

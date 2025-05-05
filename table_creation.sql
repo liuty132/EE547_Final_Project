@@ -31,3 +31,8 @@ CREATE TABLE IF NOT EXISTS playlist_tracks (
     position INTEGER, 
     PRIMARY KEY (playlist_id, track_id)
 );
+
+
+INSERT INTO users (cognito_sub, username)
+VALUES
+    ('e14b75a0-2041-70ab-d788-fe958b962d47', 'liuty132');

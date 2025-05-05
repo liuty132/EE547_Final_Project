@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Audio</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --aw-bg-main: #0f172a;
@@ -16,6 +17,9 @@
             --aw-accent-hover: #2563eb;
             --aw-card-bg: #334155;
         }
+
+        body { font-family: 'Inter', sans-serif;}
+        h1, h2, h3, h4, h5, h6 { font-family: 'Space Grotesk', sans-serif; }
 
         .bg-main { background-color: var(--aw-bg-main); }
         .bg-navbar { background-color: var(--aw-bg-navbar); }
@@ -37,7 +41,7 @@
     <!-- Navigation -->
     <header class="bg-navbar shadow">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold text-main">432 Hz Music</a>
+            <a href="/" class="text-2xl font-bold text-main">Resona</a>
             <nav class="space-x-4">
                 <a href="/" class="text-muted hover:text-blue-400">Home</a>
                 <a href="/radio" class="text-muted hover:text-blue-400">Radio</a>
@@ -53,7 +57,7 @@
     </header>
 
     <!-- Signup Form -->
-    <div id="signup-form" class="form-container hidden max-w-md mx-auto my-6 card p-6 rounded-lg shadow">
+    <div id="signup-form" class="form-container fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 card p-6 rounded-lg shadow hidden">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-semibold">Sign Up</h2>
             <span class="text-muted cursor-pointer text-xl" onclick="hideForm('signup-form')">×</span>
@@ -65,7 +69,7 @@
     </div>
 
     <!-- Login Form -->
-    <div id="login-form" class="form-container hidden max-w-md mx-auto my-6 card p-6 rounded-lg shadow">
+    <div id="login-form" class="form-container fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 card p-6 rounded-lg shadow hidden">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-semibold">Login</h2>
             <span class="text-muted cursor-pointer text-xl" onclick="hideForm('login-form')">×</span>

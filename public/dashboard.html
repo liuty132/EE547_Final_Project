@@ -100,10 +100,10 @@
 
         async function loadUserUploads() {
         const token = localStorage.getItem("authToken");
-        if (!token) {
-            window.location.href = "/";
-            return;
-        }
+        // if (!token) {
+        //     window.location.href = "/";
+        //     return;
+        // }
 
         document.getElementById("username-display").innerText = "Welcome back!";
 

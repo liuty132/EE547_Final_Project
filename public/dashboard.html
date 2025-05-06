@@ -93,14 +93,20 @@
     </main>
 
     <script>
+        function logout() {
+            localStorage.removeItem("authToken");
+            window.location.href = "/";
+        }
+
+        async function loadUserUploads() {
         const token = localStorage.getItem("authToken");
         if (!token) {
             window.location.href = "/";
+            return;
         }
 
         document.getElementById("username-display").innerText = "Welcome back!";
 
-        async function loadUserUploads() {
         try {
             const res = await fetch("/user-tracks/0", {
             headers: {
@@ -109,12 +115,16 @@
             });
 
             if (!res.ok) {
-                throw new Error("Failed to load tracks");
+            throw new Error("Failed to load tracks");
             }
 
             const uploads = await res.json();
             const container = document.getElementById("uploads-list");
             container.innerHTML = "";
+
+            if (!uploads.length) {
+            container.innerHTML = "<p class='text-muted'>No uploads yet.</p>";
+            }
 
             uploads.forEach(track => {
             const item = document.createElement("div");
@@ -134,14 +144,8 @@
         }
         }
 
-        function logout() {
-        localStorage.removeItem("authToken");
-        window.location.href = "/";
-        }
-
         window.onload = loadUserUploads;
     </script>
-
     <!-- <script src="auth.js"></script> -->
 </body>
 </html>

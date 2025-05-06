@@ -100,6 +100,19 @@
 
         async function loadUserUploads() {
         const token = localStorage.getItem("authToken");
+
+        // Show dashboard link when user successfully logs in
+        if (token) {
+            const dashboardLink = document.createElement("a");
+            dashboardLink.href = "/dashboard";
+            dashboardLink.className = "text-muted hover:text-blue-400";
+            dashboardLink.innerText = "Dashboard";
+            document.querySelector("nav").appendChild(dashboardLink);
+
+            document.getElementById("username-display").innerText = "Welcome!";
+            document.getElementById("logout-btn").classList.remove("hidden");
+        }
+
         // if (!token) {
         //     window.location.href = "/";
         //     return;
@@ -146,6 +159,6 @@
 
         window.onload = loadUserUploads;
     </script>
-    <!-- <script src="auth.js"></script> -->
+    <script src="auth.js"></script>
 </body>
 </html>

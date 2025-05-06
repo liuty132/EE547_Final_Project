@@ -114,35 +114,43 @@ async function verifyEmail() {
 }
 
 async function login() {
-    const username = document.getElementById('login-username').value;
-    const password = document.getElementById('login-password').value;
+    const username = document.getElementById("login-username").value.trim();
+    const password = document.getElementById("login-password").value.trim();
+    const messageEl = document.getElementById("login-message");
+  
+    messageEl.innerText = ""; // clear previous messages
+  
+    if (!username || !password) {
+        messageEl.innerText = "Please enter both username and password.";
+        return;
+    }
+  
     try {
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password }),
-            credentials: 'include'
+        const response = await fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
         });
+  
         const data = await response.json();
-        if (response.ok) {
-            // Store the access token in localStorage
-            localStorage.setItem('accessToken', data.accessToken);
-            
-            document.getElementById('login-message').textContent = 'Login successful!';
-            document.getElementById('logout-btn').style.display = 'block';
-            document.getElementById('username-display').style.display = 'inline';
-            document.getElementById('username-display').textContent = `Welcome, ${username}`;
-            document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'none';
-            document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
-            hideForm('login-form');
-        } else {
-            document.getElementById('login-message').textContent = 'Error: ' + (data.error || 'Login failed');
+    
+        if (!response.ok) {
+            messageEl.innerText = data.error || "Login failed.";
+            return;
+        }
+    
+        if (data.token) {
+            localStorage.setItem("authToken", data.token);
+            window.location.href = "/dashboard";
+        } 
+        else {
+            messageEl.innerText = "Invalid server response: no token provided.";
         }
     } catch (error) {
-        document.getElementById('login-message').textContent = 'Error: ' + error.message;
+        console.error("Login error:", error);
+        messageEl.innerText = "Something went wrong. Please try again.";
     }
 }
-
 async function logout() {
     try {
         // Get the access token from localStorage

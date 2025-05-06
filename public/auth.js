@@ -80,7 +80,7 @@ async function signup() {
         const data = await response.json();
         if (response.ok) {
             document.getElementById('signup-message').textContent = 'Signup successful! Check your email for verification code.';
-            document.getElementById('verification-section').style.display = 'block';
+            document.getElementById('verification-section').classList.remove('hidden');
             // Store username for verification
             document.getElementById('verification-section').dataset.username = username;
         } else {
@@ -103,7 +103,7 @@ async function verifyEmail() {
         const data = await response.json();
         if (response.ok) {
             document.getElementById('verification-message').textContent = 'Email verified successfully!';
-            document.getElementById('verification-section').style.display = 'none';
+            document.getElementById('verification-section').classList.add('hidden');
             hideForm('signup-form');
         } else {
             document.getElementById('verification-message').textContent = 'Error: ' + (data.error || 'Verification failed');
@@ -169,10 +169,24 @@ async function logout() {
             // Clear any form messages
             document.getElementById('login-message').textContent = '';
             document.getElementById('signup-message').textContent = '';
+        } else {
+            throw new Error('Logout failed');
         }
     } catch (error) {
         localStorage.removeItem('accessToken');
+        localStorage.removeItem('username');
         sessionStorage.clear();
+        // Hide logout button and username display
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('username-display').style.display = 'none';
+        // Show both signup and login buttons
+        const signupBtn = document.querySelector('button[onclick="showForm(\'signup-form\')"]');
+        const loginBtn = document.querySelector('button[onclick="showForm(\'login-form\')"]');
+        signupBtn.style.display = 'block';
+        loginBtn.style.display = 'block';
+        // Clear any form messages
+        document.getElementById('login-message').textContent = '';
+        document.getElementById('signup-message').textContent = '';
         console.error('Logout error:', error);
     }
 }

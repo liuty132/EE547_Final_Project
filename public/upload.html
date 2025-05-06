@@ -66,6 +66,13 @@
         <input type="email" id="signup-email" placeholder="Email" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400" />
         <input type="password" id="signup-password" placeholder="Password" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400" />
         <button onclick="signup()" class="w-full btn-accent py-2 rounded transition">Sign Up</button>
+        <div id="verification-section" class="verification-form hidden">
+            <h3>Verify Email</h3>
+            <input type="text" id="verification-code" placeholder="Verification Code" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400">
+            <button onclick="verifyEmail()" class="w-full btn-accent py-2 rounded transition">Verify</button>
+            <p id="verification-message" class="text-sm mt-2"></p>
+        </div>
+        <p id="signup-message" class="text-sm mt-2"></p>
     </div>
 
     <!-- Login Form -->

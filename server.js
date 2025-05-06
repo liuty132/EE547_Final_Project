@@ -723,3 +723,8 @@ app.get('/playlist/:playlistId/:offset', verifyCognitoToken, async (req, res) =>
         await pool.end();
     }
 });
+
+// route to dashboard
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+ });

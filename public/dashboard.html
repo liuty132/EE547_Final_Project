@@ -49,7 +49,8 @@
                 <a href="/" class="text-muted hover:text-blue-400">Home</a>
                 <a href="/radio" class="text-muted hover:text-blue-400">Radio</a>
                 <a href="/upload" class="text-muted hover:text-blue-400">Upload</a>
-                <a href="/dashboard" class="text-blue-400 font-semibold">Dashboard</a>
+                <a href="/dashboard" id="dashboard-link" class="text-muted hover:text-blue-400 hidden">Dashboard</a>
+                <!-- <a href="/dashboard" class="text-blue-400 font-semibold">Dashboard</a> -->
             </nav>
 
             <div class="space-x-2 flex items-center">
@@ -157,9 +158,18 @@
         }
     
         window.onload = () => {
-        loadUserUploads();
-        loadUserPlaylists();
+            loadUserUploads();
+            loadUserPlaylists();
         };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem("authToken");
+            const dashboardLink = document.getElementById("dashboard-link");
+
+            if (token && dashboardLink) {
+                dashboardLink.classList.remove("hidden");
+            }
+        });
 
       </script>
     <script src="auth.js"></script>

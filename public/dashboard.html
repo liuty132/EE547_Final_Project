@@ -163,10 +163,10 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            const token = localStorage.getItem("authToken");
+            // const token = localStorage.getItem("authToken");
             const dashboardLink = document.getElementById("dashboard-link");
 
-            if (token && dashboardLink) {
+            if ( dashboardLink) {
                 dashboardLink.classList.remove("hidden");
             }
         });

@@ -95,7 +95,7 @@
         <div class="space-y-4" id="playlists-list">
             <p class="text-muted">Loading playlists...</p>
         </div>
-        
+
     </main>
 
     <script>
@@ -107,7 +107,7 @@
         }
         async function loadUserUploads() {
         const token = localStorage.getItem("authToken");
-        if (!token) return window.location.href = "/";
+        // if (!token) return window.location.href = "/";
     
         document.getElementById("username-display").innerText = "Welcome back!";
     

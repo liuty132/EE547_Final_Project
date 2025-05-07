@@ -80,7 +80,7 @@ async function signup() {
         const data = await response.json();
         if (response.ok) {
             document.getElementById('signup-message').textContent = 'Signup successful! Check your email for verification code.';
-            document.getElementById('verification-section').classList.remove('hidden');
+            document.getElementById('verification-section').style.display = 'block';
             // Store username for verification
             document.getElementById('verification-section').dataset.username = username;
         } else {
@@ -103,7 +103,7 @@ async function verifyEmail() {
         const data = await response.json();
         if (response.ok) {
             document.getElementById('verification-message').textContent = 'Email verified successfully!';
-            document.getElementById('verification-section').classList.add('hidden');
+            document.getElementById('verification-section').style.display = 'none';
             hideForm('signup-form');
         } else {
             document.getElementById('verification-message').textContent = 'Error: ' + (data.error || 'Verification failed');
@@ -114,43 +114,35 @@ async function verifyEmail() {
 }
 
 async function login() {
-    const username = document.getElementById("login-username").value.trim();
-    const password = document.getElementById("login-password").value.trim();
-    const messageEl = document.getElementById("login-message");
-  
-    messageEl.innerText = ""; // clear previous messages
-  
-    if (!username || !password) {
-        messageEl.innerText = "Please enter both username and password.";
-        return;
-    }
-  
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
     try {
-        const response = await fetch("/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password })
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
         });
-  
         const data = await response.json();
-    
-        if (!response.ok) {
-            messageEl.innerText = data.error || "Login failed.";
-            return;
-        }
-    
-        if (data.token) {
-            localStorage.setItem("authToken", data.token);
-            window.location.href = "/dashboard";
-        } 
-        else {
-            messageEl.innerText = "Invalid server response: no token provided.";
+        if (response.ok) {
+            // Store the access token in localStorage
+            localStorage.setItem('accessToken', data.accessToken);
+            
+            document.getElementById('login-message').textContent = 'Login successful!';
+            document.getElementById('logout-btn').style.display = 'block';
+            document.getElementById('username-display').style.display = 'inline';
+            document.getElementById('username-display').textContent = `Welcome, ${username}`;
+            document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'none';
+            document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
+            hideForm('login-form');
+        } else {
+            document.getElementById('login-message').textContent = 'Error: ' + (data.error || 'Login failed');
         }
     } catch (error) {
-        console.error("Login error:", error);
-        messageEl.innerText = "Something went wrong. Please try again.";
+        document.getElementById('login-message').textContent = 'Error: ' + error.message;
     }
 }
+
 async function logout() {
     try {
         // Get the access token from localStorage
@@ -177,24 +169,10 @@ async function logout() {
             // Clear any form messages
             document.getElementById('login-message').textContent = '';
             document.getElementById('signup-message').textContent = '';
-        } else {
-            throw new Error('Logout failed');
         }
     } catch (error) {
         localStorage.removeItem('accessToken');
-        localStorage.removeItem('username');
         sessionStorage.clear();
-        // Hide logout button and username display
-        document.getElementById('logout-btn').style.display = 'none';
-        document.getElementById('username-display').style.display = 'none';
-        // Show both signup and login buttons
-        const signupBtn = document.querySelector('button[onclick="showForm(\'signup-form\')"]');
-        const loginBtn = document.querySelector('button[onclick="showForm(\'login-form\')"]');
-        signupBtn.style.display = 'block';
-        loginBtn.style.display = 'block';
-        // Clear any form messages
-        document.getElementById('login-message').textContent = '';
-        document.getElementById('signup-message').textContent = '';
         console.error('Logout error:', error);
     }
 }

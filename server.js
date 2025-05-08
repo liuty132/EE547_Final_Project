@@ -403,6 +403,102 @@ app.post('/upload-audio', verifyCognitoToken, upload.single('audio'), async (req
 });
 
 
+// ---------------------- Audio Streaming ----------------------
+app.get('/stream-audio/:trackId', verifyCognitoToken, async (req, res) => {
+    const { trackId } = req.params;
+    const userSub = req.userSub;
+    const range = req.headers.range;
+    // If not logged in, return unauthorized
+    if (userSub === 'non_user') {
+        return res.status(401).json({ error: 'Authentication required to stream audio' });
+    }
+    const pool = new Pool({
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        ssl: {
+            rejectUnauthorized: false
+        },
+        connectionTimeoutMillis: 5000,
+        idleTimeoutMillis: 30000
+    });
+    const s3 = new AWS.S3();
+    try {
+        // Get track info from database
+        const client = await pool.connect();
+        const result = await client.query(
+            'SELECT s3_path, track_name FROM tracks WHERE track_id = $1 AND user_id = (SELECT user_id FROM users WHERE cognito_sub = $2)', 
+            [trackId, userSub]
+        );
+        client.release();
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Track not found' });
+        }
+        const s3Key = result.rows[0].s3_path;
+        const bucketName = process.env.S3_AUDIO_BUCKET;
+        // Get file metadata from S3
+        const headParams = {
+            Bucket: bucketName,
+            Key: s3Key
+        };
+        const s3HeadObject = await s3.headObject(headParams).promise();
+        const fileSize = s3HeadObject.ContentLength;
+        // Handle range requests for audio streaming
+        if (range) {
+            const parts = range.replace(/bytes=/, "").split("-");
+            const start = parseInt(parts[0], 10);
+            const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+            const chunkSize = (end - start) + 1;
+            // Get the specific byte range from S3
+            const rangeParams = {
+                Bucket: bucketName,
+                Key: s3Key,
+                Range: `bytes=${start}-${end}`
+            };
+            const s3Stream = s3.getObject(rangeParams).createReadStream();
+            // Set streaming headers
+            res.writeHead(206, {
+                'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                'Accept-Ranges': 'bytes',
+                'Content-Length': chunkSize,
+                'Content-Type': 'audio/mpeg'
+            });
+            // Stream the file chunk to the client
+            s3Stream.pipe(res);
+            s3Stream.on('error', (error) => {
+                console.error('S3 stream error:', error);
+                if (!res.headersSent) {
+                    res.status(500).json({ error: 'Error streaming audio file' });
+                }
+            });
+        } else {
+            res.writeHead(200, {
+                'Content-Length': fileSize,
+                'Content-Type': 'audio/mpeg',
+                'Accept-Ranges': 'bytes'
+            });
+            
+            const s3Stream = s3.getObject(headParams).createReadStream();
+            s3Stream.pipe(res);
+            
+            s3Stream.on('error', (error) => {
+                console.error('S3 stream error:', error);
+                if (!res.headersSent) {
+                    res.status(500).json({ error: 'Error streaming audio file' });
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error streaming track:', error);
+        res.status(500).json({ error: 'Failed to stream audio file' });
+    } finally {
+        await pool.end();
+    }
+});
+
+
 app.get('/get-audio/:trackId', verifyCognitoToken, async (req, res) => {
     // console.log('Getting audio...');
     const { trackId } = req.params;

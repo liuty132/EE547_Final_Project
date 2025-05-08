@@ -44,18 +44,17 @@
     <header class="bg-navbar shadow">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <a href="/" class="text-2xl font-bold text-main">Resona</a>
-
             <nav class="space-x-4">
                 <a href="/" class="text-muted hover:text-blue-400">Home</a>
                 <a href="/radio" class="text-muted hover:text-blue-400">Radio</a>
                 <a href="/upload" class="text-muted hover:text-blue-400">Upload</a>
-                <a href="/dashboard" id="dashboard-link" class="text-muted hover:text-blue-400 hidden">Dashboard</a>
-                <!-- <a href="/dashboard" class="text-blue-400 font-semibold">Dashboard</a> -->
+                <a href="/dashboard" id="dashboard-btn" class="hidden text-muted hover:text-blue-400">Dashboard</a>
             </nav>
-
             <div class="space-x-2 flex items-center">
-                <span id="username-display" class="text-main"></span>
-                <button onclick="logout()" class="text-red-400 hover:underline">Logout</button>
+                <span id="username-display" class="hidden text-main"></span>
+                <button id="signup-btn" onclick="showForm('signup-form')" class="text-blue-400 hover:underline">Sign Up</button>
+                <button id="login-btn" onclick="showForm('login-form')" class="text-blue-400 hover:underline">Login</button>
+                <button id="logout-btn" onclick="logout()" class="hidden text-red-400 hover:underline">Logout</button>
             </div>
         </div>
     </header>
@@ -99,79 +98,8 @@
 
     </main>
 
-    <script>
-        function logout() {
-            fetch('/logout', { method: 'POST' }).then(() => {
-                localStorage.removeItem("authToken");
-                window.location.href = "/";
-            });
-        }
-        async function loadUserUploads() {
-        const token = localStorage.getItem("authToken");
-        // if (!token) return window.location.href = "/";
-    
-        document.getElementById("username-display").innerText = "Welcome back!";
-    
-        const uploadsRes = await fetch("/user-tracks/0", {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-    
-        const uploads = await uploadsRes.json();
-        const uploadContainer = document.getElementById("uploads-list");
-        uploadContainer.innerHTML = uploads.length ? "" : "<p class='text-muted'>No uploads yet.</p>";
-    
-        uploads.forEach(track => {
-            const item = document.createElement("div");
-            item.className = "card p-4 rounded-lg shadow flex items-center justify-between";
-            item.innerHTML = `
-            <div>
-                <p class="font-semibold text-lg">${track.track_name || "Untitled Track"}</p>
-                <p class="text-sm text-muted">Uploaded: ${new Date(track.uploaded_at).toLocaleDateString()}</p>
-            </div>
-            <audio controls src="${track.audio_url}" class="w-64"></audio>
-            `;
-            uploadContainer.appendChild(item);
-        });
-        }
-    
-        async function loadUserPlaylists() {
-        const token = localStorage.getItem("authToken");
-        const res = await fetch("/user-playlists", {
-            headers: { Authorization: `Bearer ${token}` }
-        });
 
-        const playlists = await res.json();
-        const container = document.getElementById("playlists-list");
-        container.innerHTML = playlists.length ? "" : "<p class='text-muted'>No playlists yet.</p>";
-    
-        playlists.forEach(p => {
-            const div = document.createElement("div");
-            div.className = "card p-4 rounded-lg shadow flex justify-between items-center";
-            div.innerHTML = `
-            <div>
-                <p class="font-semibold text-lg">${p.playlist_name}</p>
-                <p class="text-sm text-muted">Created: ${new Date(p.created_at || Date.now()).toLocaleDateString()}</p>
-            </div>
-            `;
-            container.appendChild(div);
-        });
-        }
-    
-        window.onload = () => {
-            loadUserUploads();
-            loadUserPlaylists();
-        };
-
-        window.addEventListener('DOMContentLoaded', () => {
-            // const token = localStorage.getItem("authToken");
-            const dashboardLink = document.getElementById("dashboard-link");
-
-            if ( dashboardLink) {
-                dashboardLink.classList.remove("hidden");
-            }
-        });
-
-      </script>
     <script src="auth.js"></script>
+    <script src="dashboard.js"></script>
 </body>
 </html>

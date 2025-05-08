@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.getElementById('username-display').textContent = `Welcome, ${storedUsername}`;
         document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'none';
         document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
+        document.getElementById('dashboard-btn').style.display = 'inline';
         return;
     }
 
@@ -37,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 document.getElementById('username-display').textContent = `Welcome, ${userData.username}`;
                 document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'none';
                 document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
+                document.getElementById('dashboard-btn').style.display = 'inline';
                 localStorage.setItem('username', userData.username);
             }
         } else {
@@ -134,6 +136,7 @@ async function login() {
             document.getElementById('username-display').textContent = `Welcome, ${username}`;
             document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'none';
             document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
+            document.getElementById('dashboard-btn').style.display = 'inline';
             hideForm('login-form');
         } else {
             document.getElementById('login-message').textContent = 'Error: ' + (data.error || 'Login failed');
@@ -161,6 +164,7 @@ async function logout() {
             // Hide logout button and username display
             document.getElementById('logout-btn').style.display = 'none';
             document.getElementById('username-display').style.display = 'none';
+            document.getElementById('dashboard-btn').style.display = 'none';
             // Show both signup and login buttons
             const signupBtn = document.querySelector('button[onclick="showForm(\'signup-form\')"]');
             const loginBtn = document.querySelector('button[onclick="showForm(\'login-form\')"]');

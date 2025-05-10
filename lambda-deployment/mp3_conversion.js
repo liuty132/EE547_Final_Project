@@ -5,6 +5,9 @@ const path = require('path');
 const os = require('os');
 const { parseFile } = require('music-metadata');
 const NodeID3 = require('node-id3');
+const lame = require('node-lame').Lame;
+const wavEncoder = require('wav-encoder');
+const wavDecoder = require('wav-decoder');
 
 // Processing pipeline
 // 1. Download from S3 under cognito-sub-id/original/XXX.mp3
@@ -72,156 +75,95 @@ async function applyPitchShifting(audioBuffer) {
 }
 
 
-// Convert MP3 to audio buffer using pure JavaScript
-async function mp3ToAudioBuffer(filePath) {
+async function mp3ToAudioBuffer(mp3Buffer) {
     try {
-        const mp3Parser = require('mp3-parser');
-        const createBuffer = require('audio-buffer-from');
-        const fs = require('fs');
-        
-        // Read the MP3 file
-        const fileBuffer = fs.readFileSync(filePath);
-        
-        // Parse the MP3 file
-        const arrayBuffer = new Uint8Array(fileBuffer).buffer;
-        const tags = mp3Parser.readTags(arrayBuffer);
-        
-        // Extract the audio frames
-        const frames = [];
-        for (const tag of tags) {
-            if (tag.type === 'frame') {
-                frames.push(tag);
-            }
-        }
-        
-        if (frames.length === 0) {
-            throw new Error('No audio frames found in MP3 file');
-        }
-        
-        // Get audio format information from the first frame
-        const firstFrame = frames[0];
-        const sampleRate = firstFrame.header.samplingRate;
-        const numChannels = firstFrame.header.channelMode === 'mono' ? 1 : 2;
-        
-        // Extract PCM data from all frames
-        let pcmData = [];
-        for (const frame of frames) {
-            if (frame.data) {
-                // Decode MP3 frame to PCM samples
-                // This is a simplified approach - in a real implementation,
-                // you would use a proper MP3 decoder like mpg123 or minimp3
-                const samples = mp3Parser.readSamples(frame);
-                pcmData = pcmData.concat(samples);
-            }
-        }
-        
-        // Calculate duration based on sample rate and number of samples
-        const duration = pcmData.length / (sampleRate * numChannels);
-        
-        // Create an AudioBuffer from the PCM data
-        const audioBuffer = createBuffer(pcmData, {
-            numberOfChannels: numChannels,
-            sampleRate: sampleRate,
-            format: 'float32'
+        // Create temporary files for conversion
+        const tempDir = os.tmpdir();
+        const tempMp3Path = path.join(tempDir, `temp-${Date.now()}.mp3`);
+        const tempWavPath = path.join(tempDir, `temp-${Date.now()}.wav`);
+        // Write MP3 buffer to temp file
+        fs.writeFileSync(tempMp3Path, mp3Buffer);
+        // Convert MP3 to WAV using node-lame
+        const decoder = new lame({
+            output: tempWavPath,
+            bitrate: 192
         });
-        
-        console.log('Created audio buffer with:', {
-            sampleRate: audioBuffer.sampleRate,
-            channels: audioBuffer.numberOfChannels,
-            duration: audioBuffer.duration
-        });
+        await decoder.setFile(tempMp3Path).decode();
+        // Read WAV file
+        const wavBuffer = fs.readFileSync(tempWavPath);
+        // Decode WAV to audio buffer
+        const wavData = await wavDecoder.decode(wavBuffer);
+        // Create an AudioBuffer-like object
+        const audioBuffer = {
+            sampleRate: wavData.sampleRate,
+            length: wavData.channelData[0].length,
+            numberOfChannels: wavData.channelData.length,
+            duration: wavData.channelData[0].length / wavData.sampleRate,
+            getChannelData: (channel) => {
+                if (channel < wavData.channelData.length) {
+                    return wavData.channelData[channel];
+                }
+                return new Float32Array(wavData.channelData[0].length);
+            }
+        };
+        // Clean up temp files
+        try {
+            fs.unlinkSync(tempMp3Path);
+            fs.unlinkSync(tempWavPath);
+        } catch (cleanupError) {
+            console.warn('Error cleaning up temp files:', cleanupError);
+        }
         
         return audioBuffer;
     } catch (error) {
         console.error('MP3 to AudioBuffer conversion error:', error);
-        
-        // Fallback to metadata-only approach if decoding fails
-        const metadata = await parseFile(filePath);
-        console.log('Falling back to placeholder audio buffer');
-        
-        // Create a simplified audio buffer representation with placeholder data
-        const audioBuffer = {
-            sampleRate: metadata.format.sampleRate,
-            numberOfChannels: metadata.format.numberOfChannels,
-            length: Math.round(metadata.format.duration * metadata.format.sampleRate),
-            duration: metadata.format.duration,
-            getChannelData: (channel) => {
-                // Create a placeholder channel data with some random noise
-                // to simulate audio content
-                const buffer = new Float32Array(Math.round(metadata.format.duration * metadata.format.sampleRate));
-                for (let i = 0; i < buffer.length; i++) {
-                    buffer[i] = (Math.random() * 2 - 1) * 0.01; // Very quiet noise
-                }
-                return buffer;
-            }
-        };
-        return audioBuffer;
+        throw error;
     }
 }
 
 // Convert audio buffer to MP3 using pure JavaScript
 async function audioBufferToMp3(audioBuffer) {
+    // More robust implementation for Lambda environment
     try {
-        const lame = require('lamejs');
-        
-        // MP3 encoding parameters
-        const bitRate = 128; // kbps
-        const sampleRate = audioBuffer.sampleRate;
+        // Extract audio data
         const numChannels = audioBuffer.numberOfChannels;
-        
-        // Create MP3 encoder
-        const mp3encoder = new lame.Mp3Encoder(numChannels, sampleRate, bitRate);
-        
-        // Process each channel
-        const mp3Data = [];
-        const sampleBlockSize = 1152; // Must be a multiple of 576 for MPEG1 and 1152 for MPEG2
-        
-        // Get audio data from each channel
-        const channels = [];
-        for (let i = 0; i < numChannels; i++) {
-            channels.push(audioBuffer.getChannelData(i));
+        const length = audioBuffer.length;
+        const sampleRate = audioBuffer.sampleRate;
+        // Prepare WAV data format
+        const channelData = [];
+        for (let channel = 0; channel < numChannels; channel++) {
+            channelData.push(audioBuffer.getChannelData(channel));
         }
-        
-        // Process the audio in chunks
-        for (let i = 0; i < audioBuffer.length; i += sampleBlockSize) {
-            // Create sample blocks for each channel
-            const leftSamples = new Int16Array(sampleBlockSize);
-            const rightSamples = numChannels === 2 ? new Int16Array(sampleBlockSize) : null;
-            
-            // Convert Float32 samples to Int16 samples
-            for (let j = 0; j < sampleBlockSize; j++) {
-                if (i + j < audioBuffer.length) {
-                    // Convert float [-1.0, 1.0] to int [-32768, 32767]
-                    const left = Math.max(-1, Math.min(1, channels[0][i + j]));
-                    leftSamples[j] = left < 0 ? left * 32768 : left * 32767;
-                    
-                    if (numChannels === 2) {
-                        const right = Math.max(-1, Math.min(1, channels[1][i + j]));
-                        rightSamples[j] = right < 0 ? right * 32768 : right * 32767;
-                    }
-                }
-            }
-            
-            // Encode samples to MP3
-            let mp3buf;
-            if (numChannels === 1) {
-                mp3buf = mp3encoder.encodeBuffer(leftSamples);
-            } else {
-                mp3buf = mp3encoder.encodeBuffer(leftSamples, rightSamples);
-            }
-            if (mp3buf.length > 0) {
-                mp3Data.push(Buffer.from(mp3buf));
-            }
+        // Create WAV data
+        const wavData = {
+            sampleRate: sampleRate,
+            channelData: channelData
+        };
+        // Encode to WAV buffer
+        const wavBuffer = await wavEncoder.encode(wavData);
+        // Create temporary files for conversion
+        const tempDir = os.tmpdir();
+        const tempWavPath = path.join(tempDir, `temp-${Date.now()}.wav`);
+        const tempMp3Path = path.join(tempDir, `temp-${Date.now()}.mp3`);
+        // Write WAV buffer to temp file
+        fs.writeFileSync(tempWavPath, Buffer.from(wavBuffer));
+        // Convert WAV to MP3 using node-lame
+        const encoder = new lame({
+            output: tempMp3Path,
+            bitrate: 192,
+            mode: numChannels === 1 ? 'm' : 'j' // mono or joint stereo
+        });
+        await encoder.setFile(tempWavPath).encode();
+        // Read MP3 file
+        const mp3Buffer = fs.readFileSync(tempMp3Path);
+        // Clean up temp files
+        try {
+            fs.unlinkSync(tempWavPath);
+            fs.unlinkSync(tempMp3Path);
+        } catch (cleanupError) {
+            console.warn('Error cleaning up temp files:', cleanupError);
         }
-        
-        // Finalize the MP3 encoding
-        const finalizeBuf = mp3encoder.flush();
-        if (finalizeBuf.length > 0) {
-            mp3Data.push(Buffer.from(finalizeBuf));
-        }
-        
-        // Combine all MP3 data chunks into a single buffer
-        return Buffer.concat(mp3Data);
+        return mp3Buffer;
     } catch (error) {
         console.error('AudioBuffer to MP3 conversion error:', error);
         throw error;
@@ -248,9 +190,10 @@ async function extractMetadata(filePath, userSub, filename, bucket) {
                 Bucket: bucket,
                 Key: coverKey,
                 Body: imageBuffer,
-                ContentType: mimeType
+                ContentType: mimeType, 
+                ACL: 'public-read'
             }).promise();
-            coverImageUrl = `https://${process.env.BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${coverKey}`;
+            coverImageUrl = `http://${process.env.BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${coverKey}`;
         }
         return {
             title: tags.title || 'Unknown Title',
@@ -328,7 +271,7 @@ exports.handler = async (event) => {
     const localInputPath = path.join(tempDir, filename);
     try {
         // Download the file from S3
-        console.log(`Downloading file from s3}`);
+        console.log(`Downloading file from s3`);
         console.log(`${bucket}`);
         console.log(`${originalPath}`);
         const s3Object = await s3.getObject({ Bucket: bucket, Key: originalPath }).promise();
@@ -336,25 +279,21 @@ exports.handler = async (event) => {
         // Extract metadata before processing
         console.log('Extracting metadata');
         const metadata = await extractMetadata(localInputPath, userSub, filename, bucket);
-
         // Convert MP3 to audio buffer
         console.log('Converting MP3 to audio buffer');
-        // const audioBuffer = await mp3ToAudioBuffer(localInputPath);
-
+        const audioBuffer = await mp3ToAudioBuffer(s3Object.Body);
         // Process the audio using our pitch shifting algorithm
         console.log('Processing audio with pitch shifting algorithm');
-        // const processedBuffer = await applyPitchShifting(audioBuffer);
-        
+        const processedBuffer = await applyPitchShifting(audioBuffer);
         // Convert processed audio buffer back to MP3
         console.log('Converting processed audio buffer to MP3');
-        // const processedMp3 = await audioBufferToMp3(processedBuffer);
-        
+        const processedMp3 = await audioBufferToMp3(processedBuffer);
         // Upload the processed file back to S3
         console.log(`Uploading processed file to s3://${bucket}/${filePath}`);
         await s3.putObject({
             Bucket: bucket,
             Key: filePath,
-            Body: s3Object.Body, // use the original MP3 content for now
+            Body: processedMp3, 
             ContentType: 'audio/mpeg'
         }).promise();
         // Insert track metadata to pg

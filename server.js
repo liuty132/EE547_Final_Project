@@ -537,7 +537,6 @@ app.get('/stream-tracks', verifyCognitoToken, async (req, res) => {
                 'Content-Length': fileSize,
                 'Content-Type': 'audio/mpeg',
                 'Accept-Ranges': 'bytes',
-                'X-Track-Id': trackId,
                 'X-Track-Name': result.rows[0].track_name
             });
             const s3Stream = s3.getObject(headParams).createReadStream();
@@ -788,7 +787,7 @@ app.get('/user-playlists', verifyCognitoToken, async (req, res) => {
     });
     try {
         const result = await pool.query(
-            'SELECT * FROM user_playlists WHERE user_sub = $1',
+            'SELECT p.* FROM playlists p JOIN users u ON p.user_id = u.user_id WHERE u.cognito_sub = $1',
             [userSub]
         );
         res.json(result.rows);
@@ -940,7 +939,7 @@ app.post('/add-to-playlist', verifyCognitoToken, async (req, res) => {
 });
 
 
-// deeletes
+// deletes
 app.delete('/playlist/:playlistId', verifyCognitoToken, async (req, res) => {
     const userSub = req.userSub;
     if (userSub === 'non_user') {

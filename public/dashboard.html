@@ -7,6 +7,7 @@
     <title>Your Library - Resona</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
@@ -30,11 +31,26 @@
         .text-muted { color: var(--aw-text-muted); }
         .card { background-color: var(--aw-card-bg); color: var(--aw-text-main); }
         .btn-accent {
-        background-color: var(--aw-accent);
-        color: white;
+            background-color: var(--aw-accent);
+            color: white;
         }
         .btn-accent:hover {
-        background-color: var(--aw-accent-hover);
+            background-color: var(--aw-accent-hover);
+        }
+        .sidebar-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+        }
+        .sidebar-item:hover, .sidebar-item.active {
+            background-color: var(--aw-bg-section);
+        }
+        .track-table th, .track-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+        .track-table tbody tr:hover {
+            background-color: var(--aw-bg-section);
         }
     </style>
 </head>
@@ -59,22 +75,169 @@
         </div>
     </header>
 
-
-    <!-- Playlist Section -->
-    <main class="max-w-5xl mx-auto px-6 py-12">
-        <h1 class="text-4xl font-bold mb-6">Your Library</h1>
-        <div class="overflow-y-auto max-h-[600px] pr-2 space-y-4" id="uploads-list">
-            <p class="text-muted">Loading your uploads...</p>
-        </div>
-    
-        <h2 class="text-2xl font-bold mt-12 mb-4">Your Playlists</h2>
-        <div class="space-y-4" id="playlists-list">
-            <p class="text-muted">Loading playlists...</p>
+    <!-- Signup Form -->
+    <div id="signup-form" class="form-container fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 card p-6 rounded-lg shadow hidden">
+        <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Sign Up</h2>
+        <span class="text-muted cursor-pointer text-xl" onclick="hideForm('signup-form')">×</span>
         </div>
 
+        <input type="text" id="signup-username" placeholder="Username" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400"/>
+        <input type="email" id="signup-email" placeholder="Email" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400"/>
+        <input type="password" id="signup-password" placeholder="Password" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400"/>
+        
+        <button onclick="signup()" class="w-full btn-accent py-2 rounded transition">Sign Up</button>
+        <div id="verification-section" class="verification-form hidden">
+            <h3>Verify Email</h3>
+            <input type="text" id="verification-code" placeholder="Verification Code" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400">
+            <button onclick="verifyEmail()" class="w-full btn-accent py-2 rounded transition">Verify</button>
+            <p id="verification-message" class="text-sm mt-2"></p>
+        </div>
+        <p id="signup-message" class="text-sm mt-2"></p>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-form" class="form-container fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 card p-6 rounded-lg shadow hidden">
+        <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Login</h2>
+        <span class="text-muted cursor-pointer text-xl" onclick="hideForm('login-form')">×</span>
+        </div>
+
+        <input type="text" id="login-username" placeholder="Username" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400"/>
+        <input type="password" id="login-password" placeholder="Password" class="w-full mb-3 p-2 border rounded bg-gray-700 text-white placeholder-gray-400"/>
+        
+        <button onclick="login()" class="w-full btn-accent py-2 rounded transition">Login</button>
+        <p id="login-message" class="text-sm text-red-400 mt-2"></p>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 flex">
+        <!-- Sidebar -->
+        <div class="w-1/4 pr-6">
+            <div class="mb-6">
+                <a href="/upload" class="btn-accent py-2 px-4 rounded flex items-center justify-center">
+                    <i class="fas fa-upload mr-2"></i> Upload New Track
+                </a>
+            </div>
+            
+            <!-- Now Playing Section -->
+            <div class="mb-6 p-3 bg-section rounded-lg">
+                <h3 class="text-sm font-semibold text-muted mb-1">NOW PLAYING</h3>
+                <div id="now-playing-container" class="flex items-center">
+                    <div class="overflow-hidden">
+                        <p id="now-playing" class="text-main font-medium truncate">Not playing</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h2 class="text-xl font-bold mb-3">Library</h2>
+                <div class="sidebar-item active" id="all-tracks-btn">
+                    <i class="fas fa-music mr-2"></i> All Tracks
+                </div>
+            </div>
+            
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xl font-bold">Playlists</h2>
+                    <button id="new-playlist-btn" class="text-blue-400 hover:text-blue-300">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div id="playlists-sidebar" class="space-y-1">
+                    <p class="text-muted text-sm">Loading playlists...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="w-3/4 bg-section rounded-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center">
+                    <h1 id="content-title" class="text-2xl font-bold mr-3">Your Tracks</h1>
+                    <button id="shuffle-btn" class="text-blue-400 hover:text-blue-300 mr-3 text-2xl p-2" title="Shuffle Play">
+                        <i class="fas fa-random"></i>
+                    </button>
+                    <button id="stop-btn" class="text-red-400 hover:text-red-300 text-2xl p-2" title="Stop Playback">
+                        <i class="fas fa-stop"></i>
+                    </button>
+                </div>
+                <div id="action-buttons" class="hidden">
+                    <button id="add-to-playlist-btn" class="btn-accent py-1 px-3 rounded mr-2 text-sm hidden">
+                        <i class="fas fa-plus mr-1"></i> Add to Playlist
+                    </button>
+                    <button id="delete-tracks-btn" class="bg-red-500 hover:bg-red-600 py-1 px-3 rounded text-sm hidden">
+                        <i class="fas fa-trash mr-1"></i> Delete
+                    </button>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="track-table w-full">
+                    <thead class="border-b border-gray-700">
+                        <tr>
+                            <th class="w-12">
+                                <input type="checkbox" id="select-all-checkbox" class="form-checkbox">
+                            </th>
+                            <th class="w-16">Cover</th>
+                            <th>Track</th>
+                            <th>Artist</th>
+                            <th>Album</th>
+                            <th>Duration</th>
+                            <th class="w-12"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tracks-container">
+                        <tr>
+                            <td colspan="8" class="text-center py-8 text-muted">Loading your tracks...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-between items-center mt-6">
+                <div class="text-sm text-muted" id="tracks-count">
+                    Showing 0 tracks
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prev-page-btn" class="py-1 px-3 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="next-page-btn" class="py-1 px-3 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 
+    <!-- Add to Playlist Form -->
+    <div id="add-to-playlist-form" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-section rounded-lg p-6 w-96">
+            <h2 class="text-xl font-bold mb-4">Add to Playlist</h2>
+            <div id="playlist-options" class="max-h-60 overflow-y-auto mb-4 space-y-2">
+                <p class="text-muted">Loading playlists...</p>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button id="cancel-add-to-playlist" class="py-2 px-4 rounded bg-gray-700 hover:bg-gray-600">Cancel</button>
+                <button id="confirm-add-to-playlist" class="btn-accent py-2 px-4 rounded">Add</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- New Playlist Form -->
+    <div id="new-playlist-form" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-section rounded-lg p-6 w-96">
+            <h2 class="text-xl font-bold mb-4">Create New Playlist</h2>
+            <div class="mb-4">
+                <label for="playlist-name" class="block text-sm font-medium mb-1">Playlist Name</label>
+                <input type="text" id="playlist-name" class="w-full p-2 rounded bg-gray-700 text-white" placeholder="Enter playlist name">
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button id="cancel-new-playlist" class="py-2 px-4 rounded bg-gray-700 hover:bg-gray-600">Cancel</button>
+                <button id="create-playlist" class="btn-accent py-2 px-4 rounded">Create</button>
+            </div>
+        </div>
+    </div>
     <script src="auth.js"></script>
     <script src="dashboard.js"></script>
 </body>

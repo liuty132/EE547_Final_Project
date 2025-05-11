@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.getElementById('username-display').textContent = `Welcome, ${storedUsername}`;
         document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'none';
         document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
-        document.getElementById('dashboard-btn').style.display = 'inline';
-        return;
+        document.getElementById('dashboard-btn').classList.remove('pointer-events-none', 'opacity-50');
+        // return;
     }
 
     try {
@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'none';
                 document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
                 document.getElementById('dashboard-btn').style.display = 'inline';
+                document.getElementById('dashboard-btn').classList.remove('pointer-events-none', 'opacity-50');
                 localStorage.setItem('username', userData.username);
             }
         } else {
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             document.querySelector('button[onclick="showForm(\'login-form\')"]').style.display = 'block';
             document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'block';
             document.getElementById('username-display').style.display = 'none';
+            document.getElementById('dashboard-btn').classList.add('pointer-events-none', 'opacity-50');
         }
     } catch (error) {
         console.error('Session restoration error:', error);
@@ -138,6 +140,7 @@ async function login() {
             document.querySelector('button[onclick="showForm(\'signup-form\')"]').style.display = 'none';
             document.getElementById('dashboard-btn').style.display = 'inline';
             hideForm('login-form');
+            document.getElementById('dashboard-btn').classList.remove('pointer-events-none', 'opacity-50');
         } else {
             document.getElementById('login-message').textContent = 'Error: ' + (data.error || 'Login failed');
         }
@@ -166,7 +169,6 @@ async function logout() {
     // Hide logout button and username display
     document.getElementById('logout-btn').style.display = 'none';
     document.getElementById('username-display').style.display = 'none';
-    document.getElementById('dashboard-btn').style.display = 'none';
     // Show both signup and login buttons
     const signupBtn = document.querySelector('button[onclick="showForm(\'signup-form\')"]');
     const loginBtn = document.querySelector('button[onclick="showForm(\'login-form\')"]');
@@ -178,4 +180,5 @@ async function logout() {
     if (window.location.pathname.includes('/dashboard')) {
         window.location.href = '/';
     }
+    document.getElementById('dashboard-btn').classList.add('pointer-events-none', 'opacity-50');
 }

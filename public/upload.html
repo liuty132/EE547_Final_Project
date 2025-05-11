@@ -41,13 +41,14 @@
     <!-- Navigation -->
     <header class="bg-navbar shadow">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold text-main">Resona</a>
-            <nav class="space-x-4">
-                <a href="/" class="text-muted hover:text-blue-400">Home</a>
-                <a href="/radio" class="text-muted hover:text-blue-400">Radio</a>
-                <a href="/upload" class="text-muted hover:text-blue-400">Conversion Tool</a>
-                <a href="/dashboard" id="dashboard-btn" class="hidden text-muted hover:text-blue-400">Dashboard</a>
-            </nav>
+            <div class="flex items-center space-x-6">
+                <a href="/" class="text-2xl font-bold text-main">Resona</a>
+                <nav class="space-x-4">
+                    <a href="/radio" class="text-muted hover:text-blue-400">Radio</a>
+                    <a href="/upload" class="text-muted hover:text-blue-400">Conversion Tool</a>
+                    <a href="/dashboard" id="dashboard-btn" class="text-muted hover:text-blue-400 pointer-events-none opacity-50">Dashboard</a>
+                </nav>
+            </div>
             <div class="space-x-2 flex items-center">
                 <span id="username-display" class="hidden text-main"></span>
                 <button onclick="showForm('signup-form')" class="text-blue-400 hover:underline">Sign Up</button>

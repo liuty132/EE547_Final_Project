@@ -61,8 +61,13 @@ S3_ACCESS_POINT_ARN=
 ## Setup for AWS Deployment 
 1. AWS Cognito: create a user pool and client, and configure the user pool to allow email sign-in. 
 2. AWS S3: create a bucket for storing user-uploaded MP3 files, allowing ACL uploads while blocking public access. Create an access point for the bucket. 
-3. AWS Lambda: upload the Lambda function and layer. 
-4. AWS RDS: create a Postgres database and configure the database. 
+3. AWS RDS: create a Postgres database and configure the database. 
+4. AWS Lambda: upload the Lambda function and layer. Add environment variables. 
 5. AWS EC2: create an EC2 instance and deploy the server. 
-6. Configure the `.env` file in Lambda function and EC2 instance. 
-7. Configure appropriate policies for all AWS services. 
+6. Configure appropriate policies for all AWS services. 
+7. SSH into EC2 instance, install dependencies, configure the environment variables and start the server: 
+```
+npm install
+nano .env
+node server.js
+```

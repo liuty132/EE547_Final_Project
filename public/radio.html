@@ -7,6 +7,7 @@
     <title>KUSC Classical Radio</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
@@ -139,8 +140,12 @@
 
         <div class="flex flex-col items-center gap-6">
             <div class="space-x-4">
-                <button id="playButton" class="btn-accent px-6 py-2 rounded hover:bg-blue-700">Play Radio</button>
-                <button id="stopButton" class="bg-gray-700 text-white px-6 py-2 rounded" disabled>Stop</button>
+                <button id="playButton" class="text-blue-400 hover:text-blue-300 mr-3 text-2xl p-2" title="Play">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button id="stopButton" class="text-red-400 hover:text-red-300 text-2xl p-2" title="Stop Playback">
+                    <i class="fas fa-stop"></i>
+                </button>
             </div>
 
             <div class="flex items-center gap-2">

@@ -5,12 +5,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
     const statusMessage = document.getElementById('statusMessage');
-    const loginBtn = document.getElementById('loginBtn');
-    const signupBtn = document.getElementById('signupBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
+    const conversionResults = document.getElementById('conversionResults');
+    const trackInfo = document.getElementById('trackInfo');
+    const downloadBtn = document.getElementById('downloadBtn');
     
-    // Check if user is logged in
-    const token = localStorage.getItem('accessToken');
     // File selection
     fileInput.addEventListener('change', function() {
         if (this.files.length > 0) {
@@ -25,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
     submitBtn.addEventListener('click', async function() {
         const file = fileInput.files[0];
         if (!file) return;
-        // Check if user is logged in
         const token = localStorage.getItem('accessToken');
         // if (!token) {
         //     alert('Please log in to upload files');
@@ -47,16 +44,69 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 progressBar.style.width = '100%';
                 statusMessage.textContent = 'Upload successful!';
+                // Extract track information
+                const data = await response.json();
+                console.log("Response data:", data);
+                let trackId, trackName, coverImageUrl;
+                if (data.metadata) {
+                    const metadata = typeof data.metadata === 'string' 
+                        ? JSON.parse(data.metadata) 
+                        : data.metadata;
+                    trackId = metadata.fileId;
+                    trackName = file.name.replace(/\.[^/.]+$/, ""); 
+                    coverImageUrl = metadata.coverImageUrl;
+                }
+                trackInfo.innerHTML = '';
+                // Add track name
+                const trackNameElement = document.createElement('p');
+                trackNameElement.className = 'text-lg font-semibold mb-3';
+                trackNameElement.textContent = `Track: ${trackName}`;
+                trackInfo.appendChild(trackNameElement);
+                // Add cover art if available
+                if (coverImageUrl) {
+                    const coverArt = document.createElement('img');
+                    coverArt.src = coverImageUrl;
+                    coverArt.alt = 'Album Cover';
+                    coverArt.className = 'mx-auto w-32 h-32 object-cover rounded mb-4';
+                    trackInfo.appendChild(coverArt);
+                }
+                downloadBtn.onclick = function() {
+                    fetch(`/get-audio/${trackId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                    .then(response => response.blob())
+                    .then(blob => {
+                        // Create a download link for the blob
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = `${trackName}.mp3`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    })
+                    .catch(error => {
+                        console.error('Download error:', error);
+                        alert('Failed to download the file. Please try again.');
+                    });
+                };
+                // Show conversion results
+                conversionResults.classList.remove('hidden');
+                // Hide progress after a short delay
                 setTimeout(() => {
                     progressContainer.style.display = 'none';
+                    submitBtn.disabled = false;
                     fileInput.value = '';
                     fileName.textContent = 'No file selected';
                     submitBtn.style.display = 'none';
-                    submitBtn.disabled = false;
-                }, 10000);
+                }, 1000);
             } else {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'Upload timed out');
+                throw new Error(errorData.error || 'Upload failed');
             }
         } catch (error) {
             progressBar.style.width = '0%';

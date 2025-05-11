@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Create audio context
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
             audioElement.crossOrigin = "anonymous";
-            audioElement.src = "/stream";
+            audioElement.src = "/stream-radio";
             audioSource = audioContext.createMediaElementSource(audioElement);
             audioSource.connect(audioContext.destination);
             // Update UI
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
             audioContext.resume();
         }
         // Ensure we have a fresh stream URL to prevent caching issues
-        audioElement.src = "/stream?t=" + new Date().getTime();
+        audioElement.src = "/stream-radio?t=" + new Date().getTime();
         // Start playback
         audioElement.play().then(() => {
             applyPitchShifting(frequencyToggle.checked);

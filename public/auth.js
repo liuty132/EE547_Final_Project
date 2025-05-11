@@ -148,7 +148,7 @@ async function login() {
 
 async function logout() {
     try {
-        // Get the access token from localStorage
+        // Get the access token from local1
         const accessToken = localStorage.getItem('accessToken');
         const response = await fetch('/logout', {
             method: 'POST',
@@ -157,26 +157,36 @@ async function logout() {
             },
             credentials: 'include'
         });
-        if (response.ok) {
-            // Clear user data from localStorage
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('username');
-            // Hide logout button and username display
-            document.getElementById('logout-btn').style.display = 'none';
-            document.getElementById('username-display').style.display = 'none';
-            document.getElementById('dashboard-btn').style.display = 'none';
-            // Show both signup and login buttons
-            const signupBtn = document.querySelector('button[onclick="showForm(\'signup-form\')"]');
-            const loginBtn = document.querySelector('button[onclick="showForm(\'login-form\')"]');
-            signupBtn.style.display = 'block';
-            loginBtn.style.display = 'block';
-            // Clear any form messages
-            document.getElementById('login-message').textContent = '';
-            document.getElementById('signup-message').textContent = '';
-        }
-    } catch (error) {
+        // Clear user data from localStorage
         localStorage.removeItem('accessToken');
-        sessionStorage.clear();
-        console.error('Logout error:', error);
+        localStorage.removeItem('username');
+        // Hide logout button and username display
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('username-display').style.display = 'none';
+        document.getElementById('dashboard-btn').style.display = 'none';
+        // Show both signup and login buttons
+        const signupBtn = document.querySelector('button[onclick="showForm(\'signup-form\')"]');
+        const loginBtn = document.querySelector('button[onclick="showForm(\'login-form\')"]');
+        signupBtn.style.display = 'block';
+        loginBtn.style.display = 'block';
+        // Clear any form messages
+        document.getElementById('login-message').textContent = '';
+        document.getElementById('signup-message').textContent = '';
+    } catch (error) {
+        // Clear user data from localStorage
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('username');
+        // Hide logout button and username display
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('username-display').style.display = 'none';
+        document.getElementById('dashboard-btn').style.display = 'none';
+        // Show both signup and login buttons
+        const signupBtn = document.querySelector('button[onclick="showForm(\'signup-form\')"]');
+        const loginBtn = document.querySelector('button[onclick="showForm(\'login-form\')"]');
+        signupBtn.style.display = 'block';
+        loginBtn.style.display = 'block';
+        // Clear any form messages
+        document.getElementById('login-message').textContent = '';
+        document.getElementById('signup-message').textContent = '';
     }
 }

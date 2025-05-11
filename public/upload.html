@@ -45,7 +45,7 @@
             <nav class="space-x-4">
                 <a href="/" class="text-muted hover:text-blue-400">Home</a>
                 <a href="/radio" class="text-muted hover:text-blue-400">Radio</a>
-                <a href="/upload" class="text-muted hover:text-blue-400">Upload</a>
+                <a href="/upload" class="text-muted hover:text-blue-400">Conversion Tool</a>
                 <a href="/dashboard" id="dashboard-btn" class="hidden text-muted hover:text-blue-400">Dashboard</a>
             </nav>
             <div class="space-x-2 flex items-center">
@@ -102,6 +102,16 @@
                 <div id="statusMessage" class="text-sm text-muted">Uploading...</div>
             </div>
             <button id="submitBtn" style="display: none;" class="mt-6 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">Upload</button>
+        </div>
+        
+        <!-- Conversion Results Container -->
+        <div id="conversionResults" class="max-w-xl mx-auto card p-8 rounded-lg shadow mt-8 hidden">
+            <h3 class="text-xl font-bold mb-4">Conversion Complete!</h3>
+            <div id="trackInfo" class="mb-6">
+            </div>
+            <div class="flex justify-center space-x-4">
+                <button id="downloadBtn" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">Download</button>
+            </div>
         </div>
     </section>
 
